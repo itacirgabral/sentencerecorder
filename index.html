@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sentencerecorder</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rec {
+            border: solid 2px;
+            padding: 4px;
+            border-color: red;
+            border-radius: 8px;
+        }
+
+        .playing {
+            border: solid 2px;
+            padding: 4px;
+            border-color: green;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <p>hold space to record</p>
+    <p id="counter">0 seconds</p>
+    <script>
+        let timer = 0;
+        let intervalId;
+        let holding = false
+        const counterEl = document.getElementById('counter')
+
+        const updateCounter = () => {
+            
+            counterEl.textContent = timer + ' seconds';
+            if (timer === 0 && !holding) {
+                counterEl.classList.remove('playing')
+                counterEl.classList.remove('rec')
+            }
+        };
+
+        const startTimer = () => {
+            clearInterval(intervalId);
+            intervalId = null;
+            timer = 0;
+            updateCounter();
+            intervalId = setInterval(() => {
+                timer += 1;
+                updateCounter();
+            }, 1000);
+        };
+
+        const stopTimer = () => {
+            clearInterval(intervalId);
+            intervalId = null;
+            intervalId = setInterval(() => {
+                if (timer > 0) {
+                    timer -= 1;
+                    updateCounter();
+                } else {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }, 1000);
+        };
+
+        navigator.mediaDevices
+            .getUserMedia({ audio: true })
+            .then(stream => {
+                const mediaRecorder = new MediaRecorder(stream);
+                let audioChunks = [];
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                let audio
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audio = new Audio(audioUrl);
+                    audio.play();
+                }
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.code === 'Space' && !holding) {
+                        holding = true
+                        audioChunks = [];
+                        startTimer();
+                        mediaRecorder.start();
+                        audio?.pause();
+                        counterEl.classList.remove('playing')
+                        counterEl.classList.add('rec')
+                    }
+                });
+
+                document.addEventListener('keyup', (event) => {
+                    if (event.code === 'Space') {
+                        holding = false
+                        stopTimer();
+                        mediaRecorder.stop();
+                        counterEl.classList.remove('rec')
+                        counterEl.classList.add('playing')
+                    }
+                });
+            })
+            .catch(error => console.error('Error accessing microphone:', error));
+    </script>
+</body>
+
+</html>
