@@ -14,9 +14,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
         }
 
         .rec {
@@ -36,7 +33,7 @@
 </head>
 
 <body>
-    <p>hold space, mouse or tap to record</p>
+    <p>hold space/click/tap to record</p>
     <p id="counter">0 seconds</p>
     <script>
         let timer = 0;
@@ -96,7 +93,6 @@
 
                 const startRecording = (event) => {
                     if (holding) return;
-                    event?.preventDefault();
                     holding = true;
                     audioChunks = [];
                     startTimer();
@@ -107,16 +103,17 @@
                     }
                     counterEl.classList.remove('playing')
                     counterEl.classList.add('rec')
+                    event.preventDefault();
                 };
 
                 const stopRecording = (event) => {
                     if (!holding) return;
-                    event?.preventDefault();
                     holding = false;
                     stopTimer();
                     mediaRecorder.stop();
                     counterEl.classList.remove('rec')
                     counterEl.classList.add('playing')
+                    event.preventDefault();
                 };
 
                 document.body.addEventListener('mousedown', startRecording);
@@ -126,17 +123,6 @@
                 document.body.addEventListener('touchstart', startRecording, { passive: false });
                 document.body.addEventListener('touchend', stopRecording, { passive: false });
                 document.body.addEventListener('touchcancel', stopRecording, { passive: false });
-
-                document.addEventListener('keydown', (event) => {
-                    if (event.code === 'Space' && !holding) {
-                        startRecording(event);
-                    }
-                });
-                document.addEventListener('keyup', (event) => {
-                    if (event.code === 'Space') {
-                        stopRecording(event);
-                    }
-                });
             })
             .catch(error => console.error('Error accessing microphone:', error));
     </script>
