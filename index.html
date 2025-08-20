@@ -14,6 +14,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
 
         .rec {
@@ -93,6 +96,7 @@
 
                 const startRecording = (event) => {
                     if (holding) return;
+                    event?.preventDefault();
                     holding = true;
                     audioChunks = [];
                     startTimer();
@@ -107,12 +111,12 @@
 
                 const stopRecording = (event) => {
                     if (!holding) return;
+                    event?.preventDefault();
                     holding = false;
                     stopTimer();
                     mediaRecorder.stop();
                     counterEl.classList.remove('rec')
                     counterEl.classList.add('playing')
-                    if (event) event.preventDefault();
                 };
 
                 document.body.addEventListener('mousedown', startRecording);
