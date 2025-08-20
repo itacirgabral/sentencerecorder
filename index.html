@@ -123,6 +123,17 @@
                 document.body.addEventListener('touchstart', startRecording, { passive: false });
                 document.body.addEventListener('touchend', stopRecording, { passive: false });
                 document.body.addEventListener('touchcancel', stopRecording, { passive: false });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.code === 'Space' && !holding) {
+                        startRecording(event);
+                    }
+                });
+                document.addEventListener('keyup', (event) => {
+                    if (event.code === 'Space') {
+                        stopRecording(event);
+                    }
+                });
             })
             .catch(error => console.error('Error accessing microphone:', error));
     </script>
